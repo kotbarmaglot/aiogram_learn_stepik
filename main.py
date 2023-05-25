@@ -3,12 +3,8 @@ import random
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.filters import Text, Command
-from config import API_KEY
+from config import BOT_TOKEN
 
-
-# Вместо BOT TOKEN HERE нужно вставить токен вашего бота,
-# полученный у @BotFather
-BOT_TOKEN: str = API_KEY
 
 # Создаем объекты бота и диспетчера
 bot: Bot = Bot(BOT_TOKEN)
