@@ -3,15 +3,15 @@ import random
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message
 from aiogram.filters import Text, Command
-from cust_filters import IsAdmin, NumberInMessage
-from environs import Env
+from config_data.config import load_config
 
-env = Env()
-env.read_env()
 
-bot_token = env('BOT_TOKEN')
-admin_id = env.int('ADMIN_ID')
+config = load_config()
 
+bot_token = config.tg_bot.token
+admin_id = config.tg_bot.admin_ids[0]
+
+print(bot_token, admin_id)
 
 # Создаем объекты бота и диспетчера
 bot: Bot = Bot(bot_token)
@@ -132,18 +132,6 @@ async def process_numbers_answer(message: Message):
             users[message.from_user.id]['total_games'] += 1
     else:
         await message.answer('Мы еще не играем. Хотите сыграть?')
-
-
-# @dp.message(IsAdmin(admin_ids))
-# async def answer_if_admins_update(message: Message):
-#     await message.answer(text='Вы админ')
-
-# @dp.message(IsAdmin(admin_ids))
-@dp.message(Text(startswith='найди числа', ignore_case=True),
-            NumberInMessage(), IsAdmin(admin_ids))
-async def process_if_numbers(message: Message, numbers: list[int]):
-    await message.answer(
-        text=f'Нашел: {", ".join(str(num) for num in numbers)}')
 
 
 # Этот хэндлер будет срабатывать на остальные текстовые сообщения
