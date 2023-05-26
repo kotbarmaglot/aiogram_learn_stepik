@@ -2,7 +2,7 @@ import random
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message
-from aiogram.filters import Text, Command
+from aiogram.filters import Text, Command, BaseFilter
 from config import BOT_TOKEN
 
 
@@ -10,11 +10,23 @@ from config import BOT_TOKEN
 bot: Bot = Bot(BOT_TOKEN)
 dp: Dispatcher = Dispatcher()
 
+admin_ids: list[int] = [257930228]
+
 # Количество попыток, доступных пользователю в игре
 ATTEMPTS: int = 5
 
 # Словарь, в котором будут храниться данные пользователя
 users: dict = {}
+
+
+# Собственный фильтр, проверяющий юзера на админа
+class IsAdmin(BaseFilter):
+    def __init__(self, admin_ids: list[int]) -> None:
+        # В качестве параметра фильтр принимает список с целыми числами 
+        self.admin_ids = admin_ids
+
+    async def __call__(self, message: Message) -> bool:
+        return message.from_user.id in self.admin_ids
 
 
 # Функция возвращающая случайное целое число от 1 до 100
@@ -125,6 +137,11 @@ async def process_numbers_answer(message: Message):
         await message.answer('Мы еще не играем. Хотите сыграть?')
 
 
+@dp.message(IsAdmin(admin_ids))
+async def answer_if_admins_update(message: Message):
+    await message.answer(text='Вы админ')
+
+
 # Этот хэндлер будет срабатывать на остальные текстовые сообщения
 @dp.message()
 async def process_other_text_answers(message: Message):
@@ -132,6 +149,7 @@ async def process_other_text_answers(message: Message):
         await message.answer('Мы же сейчас с вами играем. '
                              'Присылайте, пожалуйста, числа от 1 до 100')
     else:
+        print(message.from_user.id)
         await message.answer('Я довольно ограниченный бот, давайте '
                              'просто сыграем в игру?')
 
