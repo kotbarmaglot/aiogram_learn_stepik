@@ -2,31 +2,28 @@ import random
 
 from aiogram import Bot, Dispatcher
 from aiogram.types import Message
-from aiogram.filters import Text, Command, BaseFilter
-from config import BOT_TOKEN
+from aiogram.filters import Text, Command
+from cust_filters import IsAdmin, NumberInMessage
+from environs import Env
+
+env = Env()
+env.read_env()
+
+bot_token = env('BOT_TOKEN')
+admin_id = env.int('ADMIN_ID')
 
 
 # Создаем объекты бота и диспетчера
-bot: Bot = Bot(BOT_TOKEN)
+bot: Bot = Bot(bot_token)
 dp: Dispatcher = Dispatcher()
 
-admin_ids: list[int] = [257930228]
+admin_ids: list[int] = [admin_id]
 
 # Количество попыток, доступных пользователю в игре
 ATTEMPTS: int = 5
 
 # Словарь, в котором будут храниться данные пользователя
 users: dict = {}
-
-
-# Собственный фильтр, проверяющий юзера на админа
-class IsAdmin(BaseFilter):
-    def __init__(self, admin_ids: list[int]) -> None:
-        # В качестве параметра фильтр принимает список с целыми числами 
-        self.admin_ids = admin_ids
-
-    async def __call__(self, message: Message) -> bool:
-        return message.from_user.id in self.admin_ids
 
 
 # Функция возвращающая случайное целое число от 1 до 100
@@ -137,9 +134,16 @@ async def process_numbers_answer(message: Message):
         await message.answer('Мы еще не играем. Хотите сыграть?')
 
 
-@dp.message(IsAdmin(admin_ids))
-async def answer_if_admins_update(message: Message):
-    await message.answer(text='Вы админ')
+# @dp.message(IsAdmin(admin_ids))
+# async def answer_if_admins_update(message: Message):
+#     await message.answer(text='Вы админ')
+
+# @dp.message(IsAdmin(admin_ids))
+@dp.message(Text(startswith='найди числа', ignore_case=True),
+            NumberInMessage(), IsAdmin(admin_ids))
+async def process_if_numbers(message: Message, numbers: list[int]):
+    await message.answer(
+        text=f'Нашел: {", ".join(str(num) for num in numbers)}')
 
 
 # Этот хэндлер будет срабатывать на остальные текстовые сообщения
