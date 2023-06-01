@@ -11,7 +11,6 @@ logger = logging.getLogger(__name__)
 
 # Функция конфигурирования и запуска бота
 async def main():
-
     logging.basicConfig(
         level=logging.INFO,
         format='%(filename)s:%(lineno)d #%(levelname)-8s'

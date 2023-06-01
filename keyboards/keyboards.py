@@ -1,7 +1,11 @@
-from aiogram.types import ReplyKeyboardMarkup, KeyboardButton
-from aiogram.utils.keyboard import ReplyKeyboardBuilder
+from aiogram.types import (ReplyKeyboardMarkup,
+                           KeyboardButton,
+                           InlineKeyboardButton,
+                           InlineKeyboardMarkup)
+from aiogram.utils.keyboard import ReplyKeyboardBuilder, InlineKeyboardBuilder
 
-from lexicon.lexicon_ru import LEXICON_RU
+from lexicon.lexicon_ru import LEXICON_RU, LEXICON, BUTTONS
+
 
 # ------- Создаем клавиатуру через ReplyKeyboardBuilder -------
 
@@ -32,3 +36,46 @@ button_3: KeyboardButton = KeyboardButton(text=LEXICON_RU['paper'])
 game_kb: ReplyKeyboardMarkup = ReplyKeyboardMarkup(
     keyboard=[[button_1], [button_2], [button_3]], resize_keyboard=True
 )
+
+# ------- Создаем inline-keyboard -------
+big_button_1: InlineKeyboardButton = InlineKeyboardButton(
+    text='БОЛЬШАЯ КНОПКА 1',
+    callback_data='big_button_1_pressed')
+
+big_button_2: InlineKeyboardButton = InlineKeyboardButton(
+    text='БОЛЬШАЯ КНОПКА 2',
+    callback_data='big_button_2_pressed')
+
+# Создаем объект инлайн-клавиатуры
+keyboard: InlineKeyboardMarkup = InlineKeyboardMarkup(
+    inline_keyboard=[[big_button_1],
+                     [big_button_2]])
+
+
+# ------- Создаем клавиатуру через InlineKeyboardBuilder -------
+# Функция для генерации инлайн-клавиатур "на лету"
+def create_inline_kb(width: int,
+                     *args: str,
+                     **kwargs: str) -> InlineKeyboardMarkup:
+    # Инициализируем билдер
+    kb_builder: InlineKeyboardBuilder = InlineKeyboardBuilder()
+    # Инициализируем список для кнопок
+    buttons: list[InlineKeyboardButton] = []
+
+    # Заполняем список кнопками из аргументов args и kwargs
+    if args:
+        for button in args:
+            buttons.append(InlineKeyboardButton(
+                text=LEXICON[button] if button in LEXICON else button,
+                callback_data=button))
+    if kwargs:
+        for button, text in kwargs.items():
+            buttons.append(InlineKeyboardButton(
+                text=text,
+                callback_data=button))
+
+    # Распаковываем список с кнопками в билдер методом row c параметром width
+    kb_builder.row(*buttons, width=width)
+
+    # Возвращаем объект инлайн-клавиатуры
+    return kb_builder.as_markup()
